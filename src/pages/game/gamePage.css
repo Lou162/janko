@@ -1,0 +1,40 @@
+.gamePageContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  /* background-color: aliceblue; */
+  gap: 200px;
+}
+.gamePage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* height: 100vh; */
+  gap: 175px;
+}
+
+.winPhrase {
+  color: white;
+  font-size: 18px;
+  font-weight: extra-bold;
+}
+
+.titleGame {
+  display: flex;
+  color: white;
+  justify-content: center;
+  text-justify: center;
+  font-size: 50px;
+  font-weight: bold;
+  margin-bottom: -50px;
+}
+
+.gamePageBackground {
+  display: flex;
+  flex-direction: column;
+  gap: 100px;
+  min-height: 100vh;
+}

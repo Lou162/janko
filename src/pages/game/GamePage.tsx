@@ -1,80 +1,82 @@
 import { Button, ButtonGroup } from "@chakra-ui/react";
 import { useState } from "react";
 import Weapons from "../../components/weapons/weapons";
+import GameCard from "../../components/gameCard/gameCard";
+import "./gamePage.css";
+import { Move } from "../../types/game";
+import { OUTCOMES } from "../../constants/gameConstants";
 
 function Game() {
-  const move = ["rock", "paper", "scissors"] as const;
-  const [randomMove, setRandomMove] = useState<
-    "" | "rock" | "paper" | "scissors"
-  >("");
-  const [playerMove, setPlayerMove] = useState<
-    "" | "rock" | "paper" | "scissors"
-  >("");
+  const move = [Move.ROCK, Move.PAPER, Move.SCISSORS];
+  const [randomMove, setRandomMove] = useState<Move | "">("");
+  const [playerMove, setPlayerMove] = useState<Move | "">("");
   const [playerScore, setplayerScore] = useState(0);
   const [botScore, setBotScore] = useState(0);
   const [winAnswer, setwinAnswer] = useState("");
 
-  function botGame(playerMove: string) {
-    const botMove = move[Math.floor(Math.random() * move.length)];
-    setPlayerMove(playerMove as "rock" | "paper" | "scissors");
-    switch (playerMove) {
-      case "rock":
-        if (botMove === "rock") setwinAnswer("Egalité !");
-        else if (botMove === "paper") {
-          setBotScore(botScore + 1);
-          setwinAnswer("Vous avez perdu !");
-        } else {
-          setplayerScore(playerScore + 1);
-          setwinAnswer("Vous avez gagné !");
-        }
-        setRandomMove(botMove);
-        break;
-      case "paper":
-        if (botMove === "rock") {
-          setplayerScore(playerScore + 1);
-          setwinAnswer("Vous avez gagné !");
-        } else if (botMove === "paper") setwinAnswer("Egalité !");
-        else {
-          setBotScore(botScore + 1);
-          setwinAnswer("Vous avez perdu !");
-        }
-        setRandomMove(botMove);
-        break;
-      case "scissors":
-        if (botMove === "rock") {
-          setBotScore(botScore + 1);
-          setwinAnswer("Vous avez perdu !");
-        } else if (botMove === "paper") {
-          setplayerScore(playerScore + 1);
-          setwinAnswer("Vous avez gagné !");
-        } else setwinAnswer("Egalité !");
-        setRandomMove(botMove);
-        break;
-      default:
-        break;
-    }
+  function getMove() {
+    return move[Math.floor(Math.random() * move.length)];
+  }
+
+  function ifWinner(playerMove: Move | "", botMove: Move | "") {
+    if (!playerMove || !botMove) return undefined;
+    return OUTCOMES[playerMove][botMove];
+  }
+
+  function calculateScore(result: number | undefined) {
+    if (result === 1) setplayerScore(playerScore + 1);
+    else if (result === -1) setBotScore(botScore + 1);
+  }
+
+  function winPhrase(result: number | undefined) {
+    if (result === 1) return "Vous avez gagné !";
+    else if (result === -1) return "Vous avez perdu !";
+    return "Égalité !";
+  }
+
+  function playGame(playerMove: Move | "") {
+    const botMove = getMove();
+    setPlayerMove(playerMove);
+    calculateScore(ifWinner(playerMove, botMove));
+    setRandomMove(botMove);
+    setwinAnswer(winPhrase(ifWinner(playerMove, botMove)));
   }
 
   return (
     <>
-      <div>
-        <p>Bot : {botScore}</p>
-        <Weapons weaponsMove={randomMove} />
+      <div className='gamePageBackground'>
+        <h1 className='titleGame'>JANKO</h1>
+        <div className='gamePage'>
+          <div className='gamePageContainer'>
+            <GameCard
+              playerScore={playerScore}
+              playerMove={playerMove}
+              playerName='Joueur 1'
+            />
+
+            <p className='winPhrase'>{winAnswer}</p>
+
+            <GameCard
+              playerScore={botScore}
+              playerMove={randomMove}
+              playerName='Bot'
+            />
+          </div>
+
+          <ButtonGroup
+            colorScheme='pink'
+            size={"lg"}
+            gap={40}>
+            {move.map((m) => (
+              <Button
+                key={m}
+                onClick={() => playGame(m)}>
+                <Weapons weaponsMove={m} />
+              </Button>
+            ))}
+          </ButtonGroup>
+        </div>
       </div>
-      <div>
-        <p>Joueur : {playerScore} </p>
-        <Weapons weaponsMove={playerMove} />
-      </div>
-      <ButtonGroup colorScheme='blue'>
-        {move.map((m) => (
-          <Button
-            key={m}
-            onClick={() => botGame(m)}>
-            <Weapons weaponsMove={m} />
-          </Button>
-        ))}
-      </ButtonGroup>
-      <p>{winAnswer}</p>
     </>
   );
 }
