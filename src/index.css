@@ -1,0 +1,10 @@
+:root {
+  --rose: #d0bcd5;
+  --marineBlue: #181926;
+  --greenBlue: #587792;
+}
+
+.container {
+  background-color: var(--marineBlue);
+  min-height: 100vh;
+}

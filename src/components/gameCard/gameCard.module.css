@@ -1,0 +1,36 @@
+.gameCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 250px;
+  height: 250px;
+  gap: 30px;
+  margin: var(margin);
+  background-color: #f9f9f9;
+}
+.playerInfo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--greenBlue);
+  padding-inline: 10px;
+  padding-block: 20px;
+  width: 100%;
+}
+
+.weaponIcon {
+  font-size: 132px;
+}
+
+.playerAvatar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+.word {
+  font-weight: bold;
+}
