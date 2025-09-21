@@ -5,6 +5,7 @@ import { ChakraProvider } from "@chakra-ui/react";
 // import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import GamePage from "./pages/game/GamePage.tsx";
+import Multi from "./pages/multi/multi.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <div className='container'>
@@ -18,6 +19,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <Route
             path='/game'
             element={<GamePage />}
+          />
+
+          <Route
+            path='/create-game'
+            element={<Multi />}
           />
         </Routes>
       </ChakraProvider>
