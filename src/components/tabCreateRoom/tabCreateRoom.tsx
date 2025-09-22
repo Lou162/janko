@@ -1,11 +1,11 @@
-import { Button, Input, TabPanel, useToast } from "@chakra-ui/react";
+import { Button, HStack, Input, TabPanel, useToast } from "@chakra-ui/react";
 import "./tabCreateRoom.css";
 import { useState } from "react";
 
 export default function TabCreateRoom() {
   const toast = useToast();
-  const [roomName, setRoomName] = useState("");
   const [roomId, setRoomId] = useState("");
+
   function generateRoomId() {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let result = "ROOM-";
@@ -16,59 +16,52 @@ export default function TabCreateRoom() {
     }
     setRoomId(result);
   }
-  const handleRoomName = (event) => setRoomName(event.target.value);
+
   return (
     <>
-      <TabPanel>
+      <TabPanel className='tabPanel'>
         <Input
-          onChange={handleRoomName}
           color={"white"}
-          htmlSize={80}
+          htmlSize={75}
           width='auto'
           placeholder='Choisissez votre pseudo'
           size='lg'
         />
-        <div>
-          <h1
-            className='text'
-            onClick={() => {
-              navigator.clipboard.writeText(roomId);
-              toast({
-                title: "Room link copied.",
-                description: "Invite your friends to join the room.",
-                status: "success",
-                duration: 3000,
-                isClosable: true,
-              });
-            }}>
-            {roomId}
-          </h1>
+        <div
+          className='roomIdContainer'
+          onClick={() => {
+            navigator.clipboard.writeText(roomId);
+            toast({
+              title: "Room link copied.",
+              variant: "subtle",
+              description: "Invite your friends to join the room.",
+              status: "success",
+              duration: 3000,
+              isClosable: true,
+            });
+          }}>
+          <h1 className='text'>{roomId}</h1>
+        </div>
+        <HStack
+          spacing={4}
+          mt={4}
+          mb={4}>
           <Button
             colorScheme='pink'
             size={"lg"}
-            variant='outline'
             onClick={() => {
-              navigator.clipboard.writeText(roomId);
-              toast({
-                title: "Room link copied.",
-                description: "Invite your friends to join the room.",
-                status: "success",
-                duration: 3000,
-                isClosable: true,
-              });
+              generateRoomId();
             }}>
-            copy room link
+            Generate code
           </Button>
-        </div>
-        <Button
-          colorScheme='pink'
-          size={"lg"}
-          variant='outline'
-          onClick={() => {
-            generateRoomId();
-          }}>
-          Create Room
-        </Button>
+
+          <Button
+            colorScheme='pink'
+            size={"lg"}
+            variant='outline'>
+            Annuler
+          </Button>
+        </HStack>
       </TabPanel>
     </>
   );

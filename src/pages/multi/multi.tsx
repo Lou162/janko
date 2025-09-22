@@ -11,7 +11,7 @@ function Multi() {
         isFitted
         size={"lg"}
         variant={"soft-rounded"}
-        colorScheme='pink'>
+        colorScheme='blue'>
         <TabList color={"white"}>
           <Tab>Create room</Tab>
           <Tab>Join room</Tab>
