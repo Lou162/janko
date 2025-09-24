@@ -1,6 +1,8 @@
 import { Button, HStack, Input, TabPanel, useToast } from "@chakra-ui/react";
 import "./tabCreateRoom.css";
 import { useState } from "react";
+import type { Room } from "../../models/roomModel";
+import { addRoom } from "../../configs/fireBaseConfigs";
 
 export default function TabCreateRoom() {
   const toast = useToast();
@@ -15,8 +17,31 @@ export default function TabCreateRoom() {
       );
     }
     setRoomId(result);
+    createRoom(result);
   }
 
+  function createRoom(roomId: string) {
+    const roomData: Room = {
+      id: roomId,
+      status: "waiting",
+      maxPlayers: 2,
+      currentPlayers: 1,
+      currentRound: 0,
+      maxRounds: 3,
+      winner: null,
+      players: {
+        player1: {
+          id: "player1",
+          name: "Host",
+          choice: null,
+          ready: true,
+          score: 0,
+        },
+      },
+    };
+    addRoom(roomData, roomId);
+    console.log("Room created with ID:", roomId);
+  }
   return (
     <>
       <TabPanel className='tabPanel'>
