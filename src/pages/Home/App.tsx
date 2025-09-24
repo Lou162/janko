@@ -16,7 +16,7 @@ function App() {
 
           <MenuBouton
             butonText='Multijoueurs'
-            linkPage='https://vercel.com/docs/deploy-hooks'
+            linkPage='/create-game'
           />
 
           <MenuBouton
