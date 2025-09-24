@@ -5,7 +5,7 @@ function App() {
   return (
     <>
       <div className='containerApp'>
-        <h1 className='titleApp'>JANKO</h1>
+        <h1 className='titleApp'>JANKO {import.meta.env.TEST}</h1>
 
         {/* <h1>Welcome to Janko</h1> */}
         <div className='menuApp'>
