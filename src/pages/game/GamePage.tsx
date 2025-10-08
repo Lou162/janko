@@ -24,22 +24,22 @@ function Game() {
   }
 
   function calculateScore(result: number | undefined) {
-    if (result === 1) setplayerScore(playerScore + 1);
-    else if (result === -1) setBotScore(botScore + 1);
-  }
-
-  function winPhrase(result: number | undefined) {
-    if (result === 1) return "Vous avez gagné !";
-    else if (result === -1) return "Vous avez perdu !";
+    if (result === 1) {
+      setplayerScore(playerScore + 1);
+      return "Vous avez gagné !";
+    } else if (result === -1) {
+      setBotScore(botScore + 1);
+      return "Vous avez perdu !";
+    }
     return "Égalité !";
   }
 
   function playGame(playerMove: Move | "") {
     const botMove = getMove();
     setPlayerMove(playerMove);
-    calculateScore(ifWinner(playerMove, botMove));
+    const winPhrase = calculateScore(ifWinner(playerMove, botMove));
     setRandomMove(botMove);
-    setwinAnswer(winPhrase(ifWinner(playerMove, botMove)));
+    setwinAnswer(winPhrase || "");
   }
 
   return (

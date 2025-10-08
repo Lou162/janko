@@ -1,6 +1,7 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
 import "./multi.css";
 import TabCreateRoom from "../../components/tabCreateRoom/tabCreateRoom";
+import TabJoinRoom from "../../components/tabJoinRoom/tabJoinRoom";
 function Multi() {
   return (
     <>
@@ -20,7 +21,7 @@ function Multi() {
         <TabPanels>
           <TabCreateRoom />
           <TabPanel>
-            <p>two!</p>
+            <TabJoinRoom />
           </TabPanel>
         </TabPanels>
       </Tabs>
