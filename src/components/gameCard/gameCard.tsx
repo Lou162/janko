@@ -10,7 +10,7 @@ export default function GameCard({
   playerName = "Player",
 }: {
   playerScore: number;
-  playerMove: Move | "";
+  playerMove: Move | null;
   playerName?: string;
   margin?: string;
 }) {

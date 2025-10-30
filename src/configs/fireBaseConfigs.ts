@@ -1,11 +1,12 @@
 import { initializeApp } from "firebase/app";
 import {
   getFirestore,
-  setDoc,
   doc,
-  collection,
   updateDoc,
-} from "firebase/firestore/lite";
+  setDoc,
+  collection,
+  onSnapshot,
+} from "firebase/firestore";
 import type { Room } from "../models/roomModel";
 
 // TODO: Replace the following with your app's Firebase configuration
@@ -27,16 +28,47 @@ async function addRoom(data: Room, name: string) {
   await setDoc(doc(roomsRef, name), data);
 }
 
-async function addPlayerInRoom(roomId: string, playerId: string) {
+async function addPlayerInRoom(roomId: string, playerId: string, uid: string | undefined) {
   const playerRef = doc(db, "rooms", roomId);
   await updateDoc(playerRef, {
-    [`players.${playerId}`]: {
+    guestId: uid,
+    [`players.${uid}`]: {
       id: playerId,
-      name: "Naruto",
+      name: "guest",
       choice: null,
-      ready: true,
+      ready: false,
       score: 0,
     },
   });
+} 
+
+/**
+ * Met à jour le choix d'un joueur dans la room.
+ * uid correspond à la clé du joueur dans room.players (vous stockiez les players par uid).
+ */
+export async function setPlayerChoice(roomId: string, uid: string | undefined, choice: string | null) {
+  if (!uid) return;
+  const roomRef = doc(db, "rooms", roomId);
+  await updateDoc(roomRef, {
+    [`players.${uid}.choice`]: choice,
+    [`players.${uid}.ready`]: true,
+  });
 }
-export { db, addRoom, addPlayerInRoom };
+
+/**
+ * Réinitialise le choice d'un joueur (utile pour next round).
+ */
+export async function clearChoiceFor(roomId: string, uid: string | undefined) {
+  if (!uid) return;
+  const roomRef = doc(db, "rooms", roomId);
+  await updateDoc(roomRef, { [`players.${uid}.ready`]: false });
+}
+
+/**
+ * Écoute en temps réel la room Firestore.
+ * cb reçoit la donnée Room (ou null si non existante).
+ * Retourne la fonction d'unsubscribe.
+ */
+
+
+export { db, addRoom, addPlayerInRoom, firebaseConfig };

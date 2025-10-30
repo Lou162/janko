@@ -1,8 +1,12 @@
+import type { Move } from "../types/game";
+
 export interface Room {
-  id: string;
-  status: "waiting" | "playing" | "finished";
-  maxPlayers: number;
-  currentPlayers: number;
+  hostId: string | undefined;
+  guestId: string | undefined;
+  id: string | null;
+  status: "waiting" | "playing" | "finished" | null;
+  maxPlayers: number | null;
+  currentPlayers: number | null;
   currentRound: number;
   maxRounds: number;
   winner: string | null;
@@ -12,7 +16,7 @@ export interface Room {
 export interface Player {
   id: string;
   name: string;
-  choice: "rock" | "paper" | "scissors" | null;
+  choice: Move | null;
   ready: boolean;
   score: number;
 }
