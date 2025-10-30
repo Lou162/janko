@@ -33,7 +33,7 @@ async function addPlayerInRoom(roomId: string, playerId: string, uid: string | u
     guestId: uid,
     [`players.${uid}`]: {
       id: playerId,
-      name: "guest",
+      name: "Guest",
       choice: null,
       ready: false,
       score: 0,

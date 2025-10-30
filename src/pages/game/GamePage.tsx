@@ -25,7 +25,6 @@ function Game() {
       const roomRef = doc(db, "rooms", roomId);
       const unsub = onSnapshot(roomRef, (doc) => {
         if(doc.exists()) {
-          console.log("le doc existe")
           const data = doc.data();
           setRoom(data.players || {});
 
@@ -53,7 +52,6 @@ function Game() {
     }));
     setPlayers(newPlayers);
     if(room[ChoiceAdversaire!]?.ready && room[uid!]?.ready){
-      console.log("Les deux joueurs sont prêts");
       playMoveRemote(room[uid!]?.id, room[uid!]?.choice!, room[ChoiceAdversaire!]?.choice!);
       clearChoiceFor(roomId!, uid);
     } // ✅ un seul setState !
@@ -63,13 +61,13 @@ function Game() {
   const { players, playMove, roundResult, nextRound, receiveRemoteMove, playMoveRemote } = useGame(
     gamePlayers
   );
-  
-  const player = players.find((p) => p.id === "player1")!;
-  const opponent = players.find((p) => p.id === "player2")!;
+
+  const idJoueur = gameState === "multiplayer" ? room[uid!]?.id : "player1";
+  const player = players.find((p) => p.id === idJoueur)!;
+  const opponent = players.find((p) => p.id !== idJoueur)!;
 
   function launchGameMove(playerId: string, uid: string, move: Move) {
     if (gameState === "bot") {
-      console.log("je suis dans le bot");
       playMove(playerId, move);  
     }
     else{

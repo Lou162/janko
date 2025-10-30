@@ -40,7 +40,6 @@ export default function useGame(initialPlayers: PlayerConfig[]) {
   }
 
   function computeRound(nextPlayers: PlayerState[]) {
-    console.log("Je suis là compute round");
     // For now we compute result for two players (easy to extend to n-player later)
     if (nextPlayers.length !== 2) return nextPlayers;
     const [a, b] = nextPlayers;
@@ -69,7 +68,6 @@ export default function useGame(initialPlayers: PlayerConfig[]) {
   }
 
   function playMove(playerId: string, move: Move) {
-    console.log("je suis dans le play move");
     // update player's move and, atomically, make bots play if all humans have moved
     setPlayers((prev) => {
       // set the current player's move
@@ -102,12 +100,9 @@ export default function useGame(initialPlayers: PlayerConfig[]) {
       let next = prev.map((p) => (p.id === playerId ? { ...p, move: move } : { ...p, move: opponentMove }));
       return computeRound(next);
     });
-    console.log("je suis là dans le play move remote");
-      
   }
 
   function receiveRemoteMove(move: Move, uid: string | undefined, roomId: string, playerId: string) {
-    console.log("j'envoie le coup au back...")
     setPlayerChoice(roomId, uid, move);
     setPlayers((prev) => {
       let next = prev.map((p) => (p.id === playerId ? { ...p, move: move } : p));
