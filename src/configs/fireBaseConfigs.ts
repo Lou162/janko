@@ -1,5 +1,11 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, setDoc, doc, collection } from "firebase/firestore/lite";
+import {
+  getFirestore,
+  doc,
+  updateDoc,
+  setDoc,
+  collection,
+} from "firebase/firestore";
 import type { Room } from "../models/roomModel";
 
 // TODO: Replace the following with your app's Firebase configuration
@@ -11,28 +17,57 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_ID,
   measurementId: import.meta.env.VITE_MEASUREMENT_ID,
-  // databaseURL:
-  //   "https://janko-cd115-default-rtdb.europe-west1.firebasedatabase.app",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const roomsRef = collection(db, "rooms");
 
-// Get a list of cities from your database
-// async function getCities(db) {
-//   const roomsCol = db.collection("Rooms").whereEqualTo("id", "ROOM-ABC123");
-//   const roomSnapshot = await getDocs(roomsCol);
-//   const roomList = roomSnapshot.forEach((doc) => {
-//     console.log(doc.id, "=>", doc.data());
-//     return doc.data();
-//   });
-//   return roomList;
-// }
-
 async function addRoom(data: Room, name: string) {
-  console.log(import.meta.env.VITE_API_KEY);
-  console.log("Adding room to Firestore:", data);
   await setDoc(doc(roomsRef, name), data);
 }
-export { db, addRoom };
+
+async function addPlayerInRoom(roomId: string, playerId: string, uid: string | undefined) {
+  const playerRef = doc(db, "rooms", roomId);
+  await updateDoc(playerRef, {
+    guestId: uid,
+    [`players.${uid}`]: {
+      id: playerId,
+      name: "guest",
+      choice: null,
+      ready: false,
+      score: 0,
+    },
+  });
+} 
+
+/**
+ * Met à jour le choix d'un joueur dans la room.
+ * uid correspond à la clé du joueur dans room.players (vous stockiez les players par uid).
+ */
+export async function setPlayerChoice(roomId: string, uid: string | undefined, choice: string | null) {
+  if (!uid) return;
+  const roomRef = doc(db, "rooms", roomId);
+  await updateDoc(roomRef, {
+    [`players.${uid}.choice`]: choice,
+    [`players.${uid}.ready`]: true,
+  });
+}
+
+/**
+ * Réinitialise le choice d'un joueur (utile pour next round).
+ */
+export async function clearChoiceFor(roomId: string, uid: string | undefined) {
+  if (!uid) return;
+  const roomRef = doc(db, "rooms", roomId);
+  await updateDoc(roomRef, { [`players.${uid}.ready`]: false });
+}
+
+/**
+ * Écoute en temps réel la room Firestore.
+ * cb reçoit la donnée Room (ou null si non existante).
+ * Retourne la fonction d'unsubscribe.
+ */
+
+
+export { db, addRoom, addPlayerInRoom, firebaseConfig };

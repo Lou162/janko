@@ -8,4 +8,5 @@
 .container {
   background-color: var(--marineBlue);
   min-height: 100vh;
+  color: white;
 }

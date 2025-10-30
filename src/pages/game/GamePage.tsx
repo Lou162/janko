@@ -1,80 +1,107 @@
 import { Button, ButtonGroup } from "@chakra-ui/react";
-import { useState } from "react";
+import useGame from "../../hooks/useGame";
 import Weapons from "../../components/weapons/weapons";
 import GameCard from "../../components/gameCard/gameCard";
 import "./gamePage.css";
 import { Move } from "../../types/game";
-import { OUTCOMES } from "../../constants/gameConstants";
+import { useLocation } from "react-router-dom";
+import { clearChoiceFor, db } from "../../configs/fireBaseConfigs";
+import { doc, onSnapshot } from "firebase/firestore";
+import type { Player } from "../../models/roomModel";
+import { useEffect, useState } from "react";
 
 function Game() {
-  const move = [Move.ROCK, Move.PAPER, Move.SCISSORS];
-  const [randomMove, setRandomMove] = useState<Move | "">("");
-  const [playerMove, setPlayerMove] = useState<Move | "">("");
-  const [playerScore, setplayerScore] = useState(0);
-  const [botScore, setBotScore] = useState(0);
-  const [winAnswer, setwinAnswer] = useState("");
+  // configure players here — pour passer en multijoueur, ajouter un second joueur non-bot
+  const location = useLocation();
+  const [room, setRoom] = useState<Record<string, Player>>({});
+  const [gamePlayers, setPlayers] = useState<{ id: string; name: string; isBot?: boolean }[]>([{ id: "player1", name: "Machin" },
+      { id: "player2", name: "Bot", isBot: true },]);
+  // const [playersState, setPlayersState] = useState(gamePlayers);
+  const navState = (location.state as { gameState?: string; roomId?: string; uid?: string }) || {};
+  const { gameState = "bot", roomId, uid } = navState;
 
-  function getMove() {
-    return move[Math.floor(Math.random() * move.length)];
-  }
+  useEffect(()=>{
+    if(roomId) {
+      const roomRef = doc(db, "rooms", roomId);
+      const unsub = onSnapshot(roomRef, (doc) => {
+        if(doc.exists()) {
+          console.log("le doc existe")
+          const data = doc.data();
+          setRoom(data.players || {});
 
-  function ifWinner(playerMove: Move | "", botMove: Move | "") {
-    if (!playerMove || !botMove) return undefined;
-    return OUTCOMES[playerMove][botMove];
-  }
+        }
+      });
+      return () => unsub();
+    }
+  }, [roomId]);
 
-  function calculateScore(result: number | undefined) {
-    if (result === 1) setplayerScore(playerScore + 1);
-    else if (result === -1) setBotScore(botScore + 1);
-  }
+  useEffect(() => {
+    getPlayersInformations(room);
+}, [room, gameState]);
 
-  function winPhrase(result: number | undefined) {
-    if (result === 1) return "Vous avez gagné !";
-    else if (result === -1) return "Vous avez perdu !";
-    return "Égalité !";
-  }
+// useEffect(() => {
+//   setPlayersState(gamePlayers);
+// }, [gamePlayers]);
 
-  function playGame(playerMove: Move | "") {
-    const botMove = getMove();
-    setPlayerMove(playerMove);
-    calculateScore(ifWinner(playerMove, botMove));
-    setRandomMove(botMove);
-    setwinAnswer(winPhrase(ifWinner(playerMove, botMove)));
+  function getPlayersInformations(players: Record<string, Player>) {
+  if (gameState === "multiplayer") {
+    const ChoiceAdversaire = Object.keys(players).find((id) => id !== uid);
+    const newPlayers = Object.entries(players).map(([_, value]) => ({
+      id: value.id,
+      name: value.name,
+      isBot: false,
+    }));
+    setPlayers(newPlayers);
+    if(room[ChoiceAdversaire!]?.ready && room[uid!]?.ready){
+      console.log("Les deux joueurs sont prêts");
+      playMoveRemote(room[uid!]?.id, room[uid!]?.choice!, room[ChoiceAdversaire!]?.choice!);
+      clearChoiceFor(roomId!, uid);
+    } // ✅ un seul setState !
   }
+}
+
+  const { players, playMove, roundResult, nextRound, receiveRemoteMove, playMoveRemote } = useGame(
+    gamePlayers
+  );
+  
+  const player = players.find((p) => p.id === "player1")!;
+  const opponent = players.find((p) => p.id === "player2")!;
+
+  function launchGameMove(playerId: string, uid: string, move: Move) {
+    if (gameState === "bot") {
+      console.log("je suis dans le bot");
+      playMove(playerId, move);  
+    }
+    else{
+      receiveRemoteMove(move, uid, roomId!, playerId);
+    }
+  }
+  const moves: Move[] = [Move.ROCK, Move.PAPER, Move.SCISSORS];
 
   return (
     <>
-      <div className='gamePageBackground'>
-        <h1 className='titleGame'>JANKO</h1>
-        <div className='gamePage'>
-          <div className='gamePageContainer'>
-            <GameCard
-              playerScore={playerScore}
-              playerMove={playerMove}
-              playerName='Joueur 1'
-            />
+      <div className="gamePageBackground">
+        <h1 className="titleGame">JANKO</h1>
+        <div className="gamePage">
+          <div className="gamePageContainer">
+            <GameCard playerScore={player?.score} playerMove={player?.move} playerName={player?.name} />
 
-            <p className='winPhrase'>{winAnswer}</p>
+            <p className="winPhrase">{roundResult}</p>
 
-            <GameCard
-              playerScore={botScore}
-              playerMove={randomMove}
-              playerName='Bot'
-            />
+            <GameCard playerScore={opponent?.score} playerMove={opponent?.move} playerName={opponent?.name} />
           </div>
 
-          <ButtonGroup
-            colorScheme='pink'
-            size={"lg"}
-            gap={40}>
-            {move.map((m) => (
-              <Button
-                key={m}
-                onClick={() => playGame(m)}>
+          <ButtonGroup colorScheme="pink" size={"lg"} gap={40}>
+            {moves.map((m) => (
+              <Button key={m} onClick={() => launchGameMove(player?.id, uid!, m)}>
                 <Weapons weaponsMove={m} />
               </Button>
             ))}
           </ButtonGroup>
+
+          <div style={{ marginTop: 16 }}>
+            <Button onClick={() => nextRound()}>Round suivant</Button>
+          </div>
         </div>
       </div>
     </>
