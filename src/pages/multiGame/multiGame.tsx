@@ -81,7 +81,6 @@ function MultiGame() {
 
     // navigate directly to the game page with the room info
     // adapt route/state to your GamePage expectations
-    console.log(id);
     navigate("/game", { state: { gameState: "multiplayer", roomId: id, uid: uid } });
   }
 
