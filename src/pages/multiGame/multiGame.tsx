@@ -1,17 +1,21 @@
-import { Button, Input, useToast } from "@chakra-ui/react";
+import { Button, Input } from "@chakra-ui/react";
 import { useState } from "react";
 import { RiArrowLeftDoubleLine, RiArrowRightDoubleLine } from "react-icons/ri";
 import type { Room } from "../../models/roomModel";
 import { addPlayerInRoom, addRoom } from "../../configs/fireBaseConfigs";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function MultiGame() {
-  const toast = useToast()
-  const location = useLocation();
-  const { uid } = location.state as { uid?: string };
+  // const toast = useToast()
+  const uid = localStorage.getItem("uid") || undefined;
   const [value, setValue] = useState("");
   const [roomId, setRoomId] = useState("");
   const navigate = useNavigate();
+
+//   useEffect(() => {
+//   document.body.style.visibility = "hidden";
+//   setTimeout(() => (document.body.style.visibility = "visible"), 0);
+// }, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     setValue(event.target.value);
@@ -66,22 +70,26 @@ function MultiGame() {
   async function generateRoomId() {
     
     const id = makeRandomRoomId();
-    setRoomId(id);
+  setRoomId(id);
 
-    await createRoom(id);
+  // Lancer la création en background
+  createRoom(id).catch(console.error);
 
-    // copy to clipboard for easy copy/paste
-    try {
-      
-      await navigator.clipboard.writeText(id);
-      console.log("Room id copied to clipboard:", id);
-    } catch (err) {
-      console.warn("Could not copy to clipboard:", err);
-    }
+  // Copie asynchrone, pas bloquante
+  navigator.clipboard.writeText(id).catch(() => {});
 
-    // navigate directly to the game page with the room info
-    // adapt route/state to your GamePage expectations
-    navigate("/game", { state: { gameState: "multiplayer", roomId: id, uid: uid } });
+  // Naviguer immédiatement
+  localStorage.setItem("roomId", id);
+  localStorage.setItem("gameState", "multiplayer");
+  navigate("/game");
+
+  // toast({
+  //   title: "Room created.",
+  //   description: `Room ID ${id} copied to clipboard.`,
+  //   status: "success",
+  //   duration: 5000,
+  //   isClosable: true,
+  // });
   }
 
   function joinRoom() {
@@ -91,7 +99,9 @@ function MultiGame() {
     if (!idToJoin) return;
     addPlayerInRoom(idToJoin, "player2", uid);
     // navigate to game/join flow, pass uid + roomId
-    navigate("/game", { state: { gameState: "multiplayer", roomId: idToJoin, uid: uid } });
+    localStorage.setItem("roomId", idToJoin);
+    localStorage.setItem("gameState", "multiplayer");
+    navigate("/game");
   }
 
   return (
@@ -109,13 +119,6 @@ function MultiGame() {
           size={"lg"}
           variant="outline"
           onClick={() => {
-            toast({
-              title: 'Room created.',
-              description: "We've created your room with id :" + roomId + " for you. And we've copied the room ID to your clipboard.",
-              status: 'success',
-              duration: 9000,
-              isClosable: true,
-            });
             generateRoomId();
           }}
         >

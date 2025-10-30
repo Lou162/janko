@@ -4,7 +4,6 @@ import Weapons from "../../components/weapons/weapons";
 import GameCard from "../../components/gameCard/gameCard";
 import "./gamePage.css";
 import { Move } from "../../types/game";
-import { useLocation } from "react-router-dom";
 import { clearChoiceFor, db } from "../../configs/fireBaseConfigs";
 import { doc, onSnapshot } from "firebase/firestore";
 import type { Player } from "../../models/roomModel";
@@ -12,13 +11,13 @@ import { useEffect, useState } from "react";
 
 function Game() {
   // configure players here — pour passer en multijoueur, ajouter un second joueur non-bot
-  const location = useLocation();
   const [room, setRoom] = useState<Record<string, Player>>({});
   const [gamePlayers, setPlayers] = useState<{ id: string; name: string; isBot?: boolean }[]>([{ id: "player1", name: "Machin" },
       { id: "player2", name: "Bot", isBot: true },]);
   // const [playersState, setPlayersState] = useState(gamePlayers);
-  const navState = (location.state as { gameState?: string; roomId?: string; uid?: string }) || {};
-  const { gameState = "bot", roomId, uid } = navState;
+  const gameState = localStorage.getItem("gameState") || "bot";
+  const uid = localStorage.getItem("uid") || undefined;
+  const roomId = localStorage.getItem("roomId") || undefined;
 
   useEffect(()=>{
     if(roomId) {

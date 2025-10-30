@@ -13,8 +13,8 @@ function App() {
     try {
       // connexion anonyme puis navigation vers /multiGame avec uid dans state
       const res = await signInAnonymously(getAuth());
-      const uid = res.user.uid;
-      navigate("/multiGame", { state: { uid } });
+      localStorage.setItem("uid", res.user.uid);
+      navigate("/multiGame");
     } catch (error) {
       console.error("Erreur lors de la connexion anonyme :", error);
     }
@@ -25,7 +25,10 @@ function App() {
         <h1 className='titleApp'>JANKO</h1>
 
         <div className='menuApp'>
-          <Link to='/game' state={{ gameState: "bot", uid: "p1" }}>
+          <Link to='/game' onClick={() => {
+            localStorage.setItem("gameState", "bot");
+            localStorage.setItem("uid", "p1");
+          }}>
             <MenuBouton butonText='Jouez maintenant' />
           </Link>
 
