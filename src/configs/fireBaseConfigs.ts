@@ -5,7 +5,6 @@ import {
   updateDoc,
   setDoc,
   collection,
-  onSnapshot,
 } from "firebase/firestore";
 import type { Room } from "../models/roomModel";
 

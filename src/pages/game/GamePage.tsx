@@ -14,7 +14,6 @@ function Game() {
   // configure players here — pour passer en multijoueur, ajouter un second joueur non-bot
   const location = useLocation();
   const [room, setRoom] = useState<Record<string, Player>>({});
-  const [choice, setChoice] = useState<string | undefined>(undefined);
   const [gamePlayers, setPlayers] = useState<{ id: string; name: string; isBot?: boolean }[]>([{ id: "player1", name: "Machin" },
       { id: "player2", name: "Bot", isBot: true },]);
   // const [playersState, setPlayersState] = useState(gamePlayers);
@@ -52,7 +51,6 @@ function Game() {
       name: value.name,
       isBot: false,
     }));
-    setChoice(ChoiceAdversaire);
     setPlayers(newPlayers);
     if(room[ChoiceAdversaire!]?.ready && room[uid!]?.ready){
       console.log("Les deux joueurs sont prêts");
