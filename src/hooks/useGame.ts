@@ -39,7 +39,19 @@ export default function useGame(initialPlayers: PlayerConfig[]) {
     return OUTCOMES[p1][p2];
   }
 
-  function computeRound(nextPlayers: PlayerState[]) {
+    function messageChoice(player: PlayerState, id: string | undefined) {
+      if (id && id === player.id) {
+        console.log("Le joueur a gagné !");
+        return `Gagné !`;
+      }else if(id && id !== player.id) {
+        console.log("Le joueur a perdu !");
+        return `Perdu !`;
+      }else {
+        return `${player.name} gagne !`;
+      }
+  }
+
+  function computeRound(nextPlayers: PlayerState[], id?: string) {
     console.log("Je suis là compute round");
     // For now we compute result for two players (easy to extend to n-player later)
     if (nextPlayers.length !== 2) return nextPlayers;
@@ -50,10 +62,10 @@ export default function useGame(initialPlayers: PlayerConfig[]) {
     let resultMessage = "";
     let updated = nextPlayers.slice();
     if (result === 1) {
-      resultMessage = `${a.name} gagne !`;
+      resultMessage = messageChoice(a, id);
       updated = updated.map((p) => (p.id === a.id ? { ...p, score: p.score + 1 } : p));
     } else if (result === -1) {
-      resultMessage = `${b.name} gagne !`;
+      resultMessage = messageChoice(b, id);
       updated = updated.map((p) => (p.id === b.id ? { ...p, score: p.score + 1 } : p));
     } else {
       resultMessage = "Égalité !";
@@ -97,10 +109,10 @@ export default function useGame(initialPlayers: PlayerConfig[]) {
     setRoundResult("");
   }
 
-  function playMoveRemote(playerId: string, move: Move, opponentMove: Move) {
+  function playMoveRemote(playerId: string, move: Move, opponentMove: Move, id: string | undefined) {
     setPlayers((prev) => {
       let next = prev.map((p) => (p.id === playerId ? { ...p, move: move } : { ...p, move: opponentMove }));
-      return computeRound(next);
+      return computeRound(next, playerId);
     });
     console.log("je suis là dans le play move remote");
       

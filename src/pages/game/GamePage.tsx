@@ -53,8 +53,7 @@ function Game() {
     }));
     setPlayers(newPlayers);
     if(room[ChoiceAdversaire!]?.ready && room[uid!]?.ready){
-      console.log("Les deux joueurs sont prêts");
-      playMoveRemote(room[uid!]?.id, room[uid!]?.choice!, room[ChoiceAdversaire!]?.choice!);
+      playMoveRemote(room[uid!]?.id, room[uid!]?.choice!, room[ChoiceAdversaire!]?.choice!, uid);
       clearChoiceFor(roomId!, uid);
     } // ✅ un seul setState !
   }
@@ -69,7 +68,6 @@ function Game() {
 
   function launchGameMove(playerId: string, uid: string, move: Move) {
     if (gameState === "bot") {
-      console.log("je suis dans le bot");
       playMove(playerId, move);  
     }
     else{
