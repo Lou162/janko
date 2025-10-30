@@ -23,7 +23,6 @@ export default function useGame(initialPlayers: PlayerConfig[]) {
   });
 }, [initialPlayers]);
 
-  console.log(initialPlayers);
   const [players, setPlayers] = useState<PlayerState[]>(
     initialPlayers.map((p) => ({ ...p, score: 0, move: null }))
   );
@@ -70,10 +69,11 @@ export default function useGame(initialPlayers: PlayerConfig[]) {
   }
 
   function playMove(playerId: string, move: Move) {
+    console.log("je suis dans le play move");
     // update player's move and, atomically, make bots play if all humans have moved
     setPlayers((prev) => {
       // set the current player's move
-      let next = prev.map((p) => (p.id === playerId ? { ...p, lastMove: move } : p));
+      let next = prev.map((p) => (p.id === playerId ? { ...p, move: move } : p));
 
       // if all humans have moved, fill bots' moves immediately
       const allHumansMoved = next.filter((p) => !p.isBot).every((p) => p.move !== null);
@@ -93,7 +93,7 @@ export default function useGame(initialPlayers: PlayerConfig[]) {
   }
 
   function nextRound() {
-    setPlayers((prev) => prev.map((p) => ({ ...p, lastMove: "" })));
+    setPlayers((prev) => prev.map((p) => ({ ...p, move: null })));
     setRoundResult("");
   }
 

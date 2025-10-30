@@ -68,17 +68,14 @@ function Game() {
   const opponent = players.find((p) => p.id === "player2")!;
 
   function launchGameMove(playerId: string, uid: string, move: Move) {
-    console.log(uid);
-    console.log(roomId);
-    console.log(playerId);
     if (gameState === "bot") {
+      console.log("je suis dans le bot");
       playMove(playerId, move);  
     }
     else{
       receiveRemoteMove(move, uid, roomId!, playerId);
     }
   }
-  console.log(room[uid!]?.choice);
   const moves: Move[] = [Move.ROCK, Move.PAPER, Move.SCISSORS];
 
   return (
@@ -96,7 +93,7 @@ function Game() {
 
           <ButtonGroup colorScheme="pink" size={"lg"} gap={40}>
             {moves.map((m) => (
-              <Button key={m} onClick={() => launchGameMove(player.id, uid!, m)}>
+              <Button key={m} onClick={() => launchGameMove(player?.id, uid!, m)}>
                 <Weapons weaponsMove={m} />
               </Button>
             ))}
