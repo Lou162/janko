@@ -52,7 +52,7 @@ function Game() {
     }));
     setPlayers(newPlayers);
     if(room[ChoiceAdversaire!]?.ready && room[uid!]?.ready){
-      playMoveRemote(room[uid!]?.id, room[uid!]?.choice!, room[ChoiceAdversaire!]?.choice!);
+      playMoveRemote(room[uid!]?.id, room[uid!]?.choice!, room[ChoiceAdversaire!]?.choice!, uid);
       clearChoiceFor(roomId!, uid);
     } // ✅ un seul setState !
   }
