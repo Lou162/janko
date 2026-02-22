@@ -5,10 +5,13 @@ import {
   updateDoc,
   setDoc,
   collection,
+  getDoc,
+  onSnapshot,
 } from "firebase/firestore";
 import type { Room } from "../models/roomModel";
 
-// TODO: Replace the following with your app's Firebase configuration
+console.log("VITE_API_KEY=", import.meta.env.VITE_API_KEY);
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
@@ -19,6 +22,13 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_MEASUREMENT_ID,
 };
 
+// Debug: afficher la config chargée (temporaire, utile en dev uniquement)
+console.log("[debug] Firebase config:", {
+  apiKey: firebaseConfig.apiKey ? "(set)" : "(missing)",
+  authDomain: firebaseConfig.authDomain ? "(set)" : "(missing)",
+  projectId: firebaseConfig.projectId ? "(set)" : "(missing)",
+});
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const roomsRef = collection(db, "rooms");
@@ -27,7 +37,11 @@ async function addRoom(data: Room, name: string) {
   await setDoc(doc(roomsRef, name), data);
 }
 
-async function addPlayerInRoom(roomId: string, playerId: string, uid: string | undefined) {
+async function addPlayerInRoom(
+  roomId: string,
+  playerId: string,
+  uid: string | undefined,
+) {
   const playerRef = doc(db, "rooms", roomId);
   await updateDoc(playerRef, {
     guestId: uid,
@@ -39,13 +53,17 @@ async function addPlayerInRoom(roomId: string, playerId: string, uid: string | u
       score: 0,
     },
   });
-} 
+}
 
 /**
  * Met à jour le choix d'un joueur dans la room.
  * uid correspond à la clé du joueur dans room.players (vous stockiez les players par uid).
  */
-export async function setPlayerChoice(roomId: string, uid: string | undefined, choice: string | null) {
+export async function setPlayerChoice(
+  roomId: string,
+  uid: string | undefined,
+  choice: string | null,
+) {
   if (!uid) return;
   const roomRef = doc(db, "rooms", roomId);
   await updateDoc(roomRef, {
@@ -64,10 +82,59 @@ export async function clearChoiceFor(roomId: string, uid: string | undefined) {
 }
 
 /**
+ * Récupère le nombre de joueurs actuels et le maximum pour une room.
+ * Retourne { currentPlayers: number | null, maxPlayers: number | null }
+ */
+export async function getRoomPlayerCounts(roomId: string) {
+  try {
+    const roomRef = doc(db, "rooms", roomId);
+    const roomSnap = await getDoc(roomRef);
+
+    if (roomSnap.exists()) {
+      const data = roomSnap.data() as Room;
+      return {
+        currentPlayers: Object.keys(data.players || {}).length,
+        maxPlayers: data.maxPlayers ?? 0,
+      };
+    }
+    return { currentPlayers: 0, maxPlayers: 0 };
+  } catch (error) {
+    console.error("Erreur lors de la récupération des données de room:", error);
+    return { currentPlayers: 0, maxPlayers: 0 };
+  }
+}
+
+/**
+ * Écoute en temps réel le nombre de joueurs d'une room.
+ * Retourne une fonction pour se désabonner.
+ */
+export function listenToRoomPlayerCounts(
+  roomId: string,
+  callback: (counts: { currentPlayers: number; maxPlayers: number }) => void,
+) {
+  const roomRef = doc(db, "rooms", roomId);
+
+  return onSnapshot(
+    roomRef,
+    (snap) => {
+      if (snap.exists()) {
+        const data = snap.data() as Room;
+        callback({
+          currentPlayers: data.currentPlayers ?? 0,
+          maxPlayers: data.maxPlayers ?? 0,
+        });
+      }
+    },
+    (error) => {
+      console.error("Erreur lors de l'écoute de la room:", error);
+    },
+  );
+}
+
+/**
  * Écoute en temps réel la room Firestore.
  * cb reçoit la donnée Room (ou null si non existante).
  * Retourne la fonction d'unsubscribe.
  */
-
 
 export { db, addRoom, addPlayerInRoom, firebaseConfig };

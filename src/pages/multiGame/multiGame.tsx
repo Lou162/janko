@@ -2,11 +2,15 @@ import { Button, Input, useToast } from "@chakra-ui/react";
 import { useState } from "react";
 import { RiArrowLeftDoubleLine, RiArrowRightDoubleLine } from "react-icons/ri";
 import type { Room } from "../../models/roomModel";
-import { addPlayerInRoom, addRoom } from "../../configs/fireBaseConfigs";
+import {
+  addPlayerInRoom,
+  addRoom,
+  getRoomPlayerCounts,
+} from "../../configs/fireBaseConfigs";
 import { useLocation, useNavigate } from "react-router-dom";
 
 function MultiGame() {
-  const toast = useToast()
+  const toast = useToast();
   const location = useLocation();
   const { uid } = location.state as { uid?: string };
   const [value, setValue] = useState("");
@@ -21,7 +25,7 @@ function MultiGame() {
     let result = "ROOM-";
     for (let i = 0; i < 6; i++) {
       result += characters.charAt(
-        Math.floor(Math.random() * characters.length)
+        Math.floor(Math.random() * characters.length),
       );
     }
     return result;
@@ -64,7 +68,6 @@ function MultiGame() {
   }
 
   async function generateRoomId() {
-    
     const id = makeRandomRoomId();
     setRoomId(id);
 
@@ -72,7 +75,6 @@ function MultiGame() {
 
     // copy to clipboard for easy copy/paste
     try {
-      
       await navigator.clipboard.writeText(id);
       console.log("Room id copied to clipboard:", id);
     } catch (err) {
@@ -81,17 +83,39 @@ function MultiGame() {
 
     // navigate directly to the game page with the room info
     // adapt route/state to your GamePage expectations
-    navigate("/game", { state: { gameState: "multiplayer", roomId: id, uid: uid } });
+    navigate("/game", {
+      state: { gameState: "multiplayer", roomId: id, uid: uid },
+    });
   }
 
-  function joinRoom() {
+  async function joinRoom() {
     // If you want to join using the input value set above
     const idToJoin = value || roomId;
 
     if (!idToJoin) return;
-    addPlayerInRoom(idToJoin, "player2", uid);
+
+    try {
+      const counts = await getRoomPlayerCounts(idToJoin);
+      console.log("Current players in room:", counts.currentPlayers);
+      console.log("Max players allowed in room:", counts.maxPlayers);
+      if (counts.currentPlayers >= counts.maxPlayers) {
+        toast({
+          title: "Room is full.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+      await addPlayerInRoom(idToJoin, "player2", uid);
+    } catch (error) {
+      console.error("Erreur lors de la jointure:", error);
+    }
+
     // navigate to game/join flow, pass uid + roomId
-    navigate("/game", { state: { gameState: "multiplayer", roomId: idToJoin, uid: uid } });
+    navigate("/game", {
+      state: { gameState: "multiplayer", roomId: idToJoin, uid: uid },
+    });
   }
 
   return (
@@ -99,37 +123,38 @@ function MultiGame() {
       <Input
         value={value}
         onChange={handleChange}
-        placeholder="Enter room id to join or leave empty to create"
-        size="sm"
+        placeholder='Enter room id to join or leave empty to create'
+        size='sm'
       />
 
       <div style={{ marginTop: 12, display: "flex", gap: 12 }}>
         <Button
-          colorScheme="pink"
+          colorScheme='pink'
           size={"lg"}
-          variant="outline"
+          variant='outline'
           onClick={() => {
             toast({
-              title: 'Room created.',
-              description: "We've created your room with id :" + roomId + " for you. And we've copied the room ID to your clipboard.",
-              status: 'success',
+              title: "Room created.",
+              description:
+                "We've created your room with id :" +
+                roomId +
+                " for you. And we've copied the room ID to your clipboard.",
+              status: "success",
               duration: 9000,
               isClosable: true,
             });
             generateRoomId();
-          }}
-        >
+          }}>
           <RiArrowLeftDoubleLine />
           Create room
           <RiArrowRightDoubleLine />
         </Button>
 
         <Button
-          colorScheme="pink"
+          colorScheme='pink'
           size={"lg"}
-          variant="outline"
-          onClick={joinRoom}
-        >
+          variant='outline'
+          onClick={joinRoom}>
           <RiArrowLeftDoubleLine />
           Join room
           <RiArrowRightDoubleLine />
